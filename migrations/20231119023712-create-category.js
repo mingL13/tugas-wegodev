@@ -6,7 +6,7 @@ module.exports = {
       categoryId: {
         allowNull: false,
         primaryKey: true,
-        type: Sequelize.UUID,
+        type: Sequelize.STRING,
         defaultValue: Sequelize.UUIDV4,
       },
       title: {

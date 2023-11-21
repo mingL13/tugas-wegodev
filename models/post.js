@@ -1,5 +1,7 @@
 "use strict";
 const { Model, Sequelize } = require("sequelize");
+const PostCategory = require("./postcategory");
+
 module.exports = (sequelize, DataTypes) => {
   class Post extends Model {
     /**
@@ -8,7 +10,11 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      Post.belongsTo(models.Category, { foreignKey: "categoryId" });
+      Post.belongsToMany(models.Category, {
+        through: models.PostCategory,
+        foreignKey: "postId",
+        as: "categories",
+      });
     }
   }
   Post.init(

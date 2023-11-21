@@ -1,4 +1,4 @@
-const { Post, Category } = require("../../models");
+const { Post, Category, PostCategory } = require("../../models");
 
 const createAPost = async (req, res) => {
   const { title, description, categoryId, status } = req.body;
@@ -11,7 +11,21 @@ const createAPost = async (req, res) => {
     categoryId,
     slug,
   })
-    .then((result) => {
+    .then(async (result) => {
+      const { postId } = result.dataValues;
+      await PostCategory.create({
+        postId,
+        categoryId,
+      })
+        .then((result) => {
+          return;
+        })
+        .catch((error) => {
+          res.status(400).json({
+            message: error.message,
+          });
+        });
+
       res.status(201).json({
         code: 201,
         message: `Data berhasil dibuat`,
@@ -42,112 +56,92 @@ const getAllPosts = async (req, res) => {
   const startIndex = (page - 1) * pageSize;
   const endIndex = page * pageSize;
 
-  await Post.findAll({
-    include: {
-      model: Category,
-    },
+  const postsData = await Post.findAll({
+    include: [
+      {
+        model: Category,
+        as: "categories",
+      },
+    ],
   })
-    .then(async (result) => {
-      const postsOnPage = result.slice(startIndex, endIndex);
-      const displayPosts = await Promise.all(
-        postsOnPage.map(async (post) => {
-          const { postId, title, description, thumbnail, status, slug, createdAt, updatedAt, deletedAt, categoryId } = post.dataValues;
-          const categoriesData = post.dataValues.Category;
+    .then((result) => {
+      const datas = result.map((data) => {
+        const { postId, title, description, thumbnail, status, slug, createdAt, updatedAt, deletedAt, categories } = data.dataValues;
 
-          let cateData;
-          if (categoriesData == null) {
-            cateData = await Promise.all(
-              categoryId.split(",").map(async (cat) => {
-                const data = await Category.findByPk(cat)
-                  .then((result) => {
-                    console.log(result);
-                    return result;
-                  })
-                  .catch((error) => {
-                    return {};
-                  });
-
-                return data;
-              })
-            );
-          }
-
-          return {
-            id: postId,
-            title: title,
-            description: description,
-            thumbnail: thumbnail,
-            status: status,
-            slug: slug,
-            createdAt: createdAt,
-            updatedAt: updatedAt,
-            deletedAt: deletedAt,
-            Categories: categoriesData == null ? cateData : categoriesData,
-          };
-        })
-      );
-      // const displayPosts = await Promise.all(
-      //   postsOnPage.map(async (post) => {
-      //     let categoriesData;
-      //     if (post.Category) {
-      //       categoriesData = [
-      //         {
-      //           id: post.Category.categoryId,
-      //           title: post.Category.title,
-      //           createdAt: post.Category.createdAt,
-      //           updatedAt: post.Category.updatedAt,
-      //           deletedAt: post.Category.deletedAt,
-      //         },
-      //       ];
-      //     } else {
-      //       categoriesData = await Promise.all(
-      //         post.categoryId.map(async (cat) => {
-      //           const catData = await Category.findByPk(cat)
-      //             .then((result) => {
-      //               const { categoryId, title, createdAt, updatedAt, deletedAt } = result.dataValues;
-      //               return {
-      //                 id: categoryId,
-      //                 title,
-      //                 createdAt,
-      //                 updatedAt,
-      //                 deletedAt,
-      //               };
-      //             })
-      //             .catch((error) => {
-      //               return {
-      //                 message: error.message,
-      //               };
-      //             });
-      //           return catData;
-      //         })
-      //       );
-      //     }
-      //     return {
-      //       id: post.postId,
-      //       title: post.title,
-      //       description: post.description,
-      //       thumbnail: post.thumbnail,
-      //       status: post.status,
-      //       slug: post.slug,
-      //       createdAt: post.createdAt,
-      //       updatedAt: post.updatedAt,
-      //       deletedAt: post.deletedAt,
-      //       Categories: categoriesData,
-      //     };
-      //   })
-      // );
-      res.status(200).json({
-        code: 200,
-        message: `${result.length} data sudah diterima`,
-        count: displayPosts.length,
-        data: displayPosts,
+        return {
+          id: postId,
+          title,
+          description,
+          thumbnail,
+          status,
+          slug,
+          createdAt,
+          updatedAt,
+          deletedAt,
+          Categories: categories,
+        };
       });
+      return datas;
     })
     .catch((error) => {
       res.status(400).json({
         message: error.message,
       });
     });
+  // const displayPosts = await Promise.all(
+  //   postsOnPage.map(async (post) => {
+  //     let categoriesData;
+  //     if (post.Category) {
+  //       categoriesData = [
+  //         {
+  //           id: post.Category.categoryId,
+  //           title: post.Category.title,
+  //           createdAt: post.Category.createdAt,
+  //           updatedAt: post.Category.updatedAt,
+  //           deletedAt: post.Category.deletedAt,
+  //         },
+  //       ];
+  //     } else {
+  //       categoriesData = await Promise.all(
+  //         post.categoryId.map(async (cat) => {
+  //           const catData = await Category.findByPk(cat)
+  //             .then((result) => {
+  //               const { categoryId, title, createdAt, updatedAt, deletedAt } = result.dataValues;
+  //               return {
+  //                 id: categoryId,
+  //                 title,
+  //                 createdAt,
+  //                 updatedAt,
+  //                 deletedAt,
+  //               };
+  //             })
+  //             .catch((error) => {
+  //               return {
+  //                 message: error.message,
+  //               };
+  //             });
+  //           return catData;
+  //         })
+  //       );
+  //     }
+  //     return {
+  //       id: post.postId,
+  //       title: post.title,
+  //       description: post.description,
+  //       thumbnail: post.thumbnail,
+  //       status: post.status,
+  //       slug: post.slug,
+  //       createdAt: post.createdAt,
+  //       updatedAt: post.updatedAt,
+  //       deletedAt: post.deletedAt,
+  //       Categories: categoriesData,
+  //     };
+  //   })
+  // );
+
+  res.status(200).json({
+    postsData,
+  });
 };
 
 const getAPost = async (req, res) => {

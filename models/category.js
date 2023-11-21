@@ -1,5 +1,6 @@
 "use strict";
 const { Model, Sequelize } = require("sequelize");
+
 module.exports = (sequelize, DataTypes) => {
   class Category extends Model {
     /**
@@ -8,7 +9,11 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      Category.belongsToMany(models.Post, {
+        through: models.PostCategory,
+        foreignKey: "categoryId",
+        as: "categories",
+      });
     }
   }
   Category.init(
@@ -16,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
       categoryId: {
         allowNull: false,
         primaryKey: true,
-        type: Sequelize.UUID,
+        type: Sequelize.STRING,
         defaultValue: Sequelize.UUIDV4,
       },
       title: {

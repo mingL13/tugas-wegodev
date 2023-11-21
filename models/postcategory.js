@@ -8,9 +8,8 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
-      PostCategory.belongsTo(models.Post, { foreignKey: "postId" });
-      PostCategory.belongsTo(models.Category, { foreignKey: "categoryId" });
+      PostCategory.belongsTo(models.Post, { foreignKey: "categoryId" });
+      PostCategory.belongsTo(models.Category, { foreignKey: "postId" });
     }
   }
   PostCategory.init(
@@ -23,9 +22,18 @@ module.exports = (sequelize, DataTypes) => {
       },
       postId: {
         type: Sequelize.UUID,
+        allowNull: false,
       },
       categoryId: {
-        type: Sequelize.UUID,
+        type: Sequelize.STRING,
+        allowNull: false,
+        get() {
+          const rawValue = this.getDataValue("categoryId");
+          return rawValue ? rawValue.split(",") : [];
+        },
+        set(value) {
+          this.setDataValue("categoryId", Array.isArray(value) ? value.join(",") : value);
+        },
       },
       createdAt: {
         allowNull: false,
