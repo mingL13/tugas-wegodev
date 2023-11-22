@@ -64,23 +64,45 @@ const getAllPosts = async (req, res) => {
       },
     ],
   })
-    .then((result) => {
-      const datas = result.map((data) => {
-        const { postId, title, description, thumbnail, status, slug, createdAt, updatedAt, deletedAt, categories } = data.dataValues;
+    .then(async (result) => {
+      const datas = await Promise.all(
+        result.map(async (data) => {
+          const { postId, title, description, thumbnail, status, slug, createdAt, updatedAt, deletedAt, categories, categoryId } = data.dataValues;
 
-        return {
-          id: postId,
-          title,
-          description,
-          thumbnail,
-          status,
-          slug,
-          createdAt,
-          updatedAt,
-          deletedAt,
-          Categories: categories,
-        };
-      });
+          const checkCategoryId = categoryId.split(",");
+          let checkCategoryDatas;
+
+          if (checkCategoryId.length !== 1) {
+            checkCategoryDatas = await Promise.all(
+              checkCategoryId.map(async (id) => {
+                const categoryData = await Category.findByPk(id)
+                  .then((result) => {
+                    return result;
+                  })
+                  .catch((error) => {
+                    res.status(400).json({
+                      message: error.message,
+                    });
+                  });
+                return categoryData;
+              })
+            );
+          }
+
+          return {
+            id: postId,
+            title,
+            description,
+            thumbnail,
+            status,
+            slug,
+            createdAt,
+            updatedAt,
+            deletedAt,
+            Categories: checkCategoryId.length == 1 ? categories : checkCategoryDatas,
+          };
+        })
+      );
       return datas;
     })
     .catch((error) => {
@@ -88,56 +110,6 @@ const getAllPosts = async (req, res) => {
         message: error.message,
       });
     });
-  // const displayPosts = await Promise.all(
-  //   postsOnPage.map(async (post) => {
-  //     let categoriesData;
-  //     if (post.Category) {
-  //       categoriesData = [
-  //         {
-  //           id: post.Category.categoryId,
-  //           title: post.Category.title,
-  //           createdAt: post.Category.createdAt,
-  //           updatedAt: post.Category.updatedAt,
-  //           deletedAt: post.Category.deletedAt,
-  //         },
-  //       ];
-  //     } else {
-  //       categoriesData = await Promise.all(
-  //         post.categoryId.map(async (cat) => {
-  //           const catData = await Category.findByPk(cat)
-  //             .then((result) => {
-  //               const { categoryId, title, createdAt, updatedAt, deletedAt } = result.dataValues;
-  //               return {
-  //                 id: categoryId,
-  //                 title,
-  //                 createdAt,
-  //                 updatedAt,
-  //                 deletedAt,
-  //               };
-  //             })
-  //             .catch((error) => {
-  //               return {
-  //                 message: error.message,
-  //               };
-  //             });
-  //           return catData;
-  //         })
-  //       );
-  //     }
-  //     return {
-  //       id: post.postId,
-  //       title: post.title,
-  //       description: post.description,
-  //       thumbnail: post.thumbnail,
-  //       status: post.status,
-  //       slug: post.slug,
-  //       createdAt: post.createdAt,
-  //       updatedAt: post.updatedAt,
-  //       deletedAt: post.deletedAt,
-  //       Categories: categoriesData,
-  //     };
-  //   })
-  // );
 
   res.status(200).json({
     postsData,
