@@ -75,8 +75,15 @@ const getAllPosts = async (req, res) => {
           if (checkCategoryId.length !== 1) {
             checkCategoryDatas = await Promise.all(
               checkCategoryId.map(async (id) => {
-                const categoryData = await Category.findByPk(id)
+                const categoryData = await Category.findByPk(id, {
+                  include: [
+                    {
+                      model: PostCategory,
+                    },
+                  ],
+                })
                   .then((result) => {
+                    console.log(result);
                     return result;
                   })
                   .catch((error) => {

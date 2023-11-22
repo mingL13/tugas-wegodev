@@ -1,5 +1,5 @@
 // Gunakan "model name" dari folder model yang sudah dibuat
-const { Users } = require("../../models");
+const { User } = require("../../models");
 const bcrypt = require("bcrypt");
 
 const hashPassword = async (password) => {
@@ -33,7 +33,7 @@ const createAUser = async (req, res) => {
 
   const hashedPassword = await hashPassword(confirmNewPassword);
 
-  await Users.create({ fullName, email, confirmNewPassword: hashedPassword, newPassword: hashedPassword, role, status })
+  await User.create({ fullName, email, confirmNewPassword: hashedPassword, newPassword: hashedPassword, role, status })
     .then((result) => {
       res.status(201).json({
         code: 201,
@@ -66,7 +66,7 @@ const getAllUser = async (req, res) => {
   const startIndex = (page - 1) * pageSize;
   const endIndex = page * pageSize;
 
-  await Users.findAll()
+  await User.findAll()
     .then((result) => {
       const userOnPage = result.slice(startIndex, endIndex);
       const displayUser = userOnPage.map((user) => {
@@ -99,7 +99,7 @@ const getAllUser = async (req, res) => {
 const getAUser = async (req, res) => {
   const idTarget = req.params.id;
 
-  await Users.findByPk(idTarget)
+  await User.findByPk(idTarget)
     .then((result) => {
       const { userId, fullName, email, role, status, avatar, createdAt, updatedAt, deletedAt } = result.dataValues;
 
@@ -130,7 +130,7 @@ const updateUser = async (req, res) => {
   const idTarget = req.params.id;
   let { fullName, email, newPassword = "", confirmNewPassword = "", status, avatar, role, createdAt, updatedAt, deletedAt } = req.body;
 
-  const dataIdTarget = await Users.findByPk(idTarget);
+  const dataIdTarget = await User.findByPk(idTarget);
 
   if (!dataIdTarget) {
     throw new Error("User not found.");
@@ -151,7 +151,7 @@ const updateUser = async (req, res) => {
     confirmNewPassword = hashedPassword;
   }
 
-  await Users.update(
+  await User.update(
     {
       fullName,
       email,
@@ -194,7 +194,7 @@ const updateUser = async (req, res) => {
 const deleteUser = async (req, res) => {
   const idTarget = req.params.id;
 
-  await Users.destroy({
+  await User.destroy({
     where: {
       userId: idTarget,
     },
