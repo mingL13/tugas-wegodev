@@ -26,7 +26,7 @@ module.exports = {
         allowNull: false,
       },
       role: {
-        type: Sequelize.ENUM("Creator", "Viewer"),
+        type: Sequelize.ENUM("Creator", "Super Admin"),
         allowNull: false,
         defaultValue: "Creator",
       },

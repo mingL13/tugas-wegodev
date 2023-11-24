@@ -1,6 +1,9 @@
 const { User } = require("../../models");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+require("dotenv").config();
+
+const env = process.env;
 
 const login = async (req, res) => {
   try {
@@ -29,17 +32,18 @@ const login = async (req, res) => {
         };
 
         const options = {
-          expiresIn: "5m",
+          expiresIn: "15m",
         };
 
-        const SECRET_KEY = "ProjectBlogWegodev";
+        const accessToken = jwt.sign(userPayload, env.SECRET_KEY, options);
 
-        const accessToken = jwt.sign(userPayload, SECRET_KEY, options);
+        const refreshToken = jwt.sign(userPayload, env.SECRET_KEY, { expiresIn: "30m" });
 
         return res.status(201).json({
           code: 201,
           message: "Berhasil masuk",
           accessToken,
+          refreshToken,
           expiressIn: 3600000,
           tokenType: "Bearer",
           user: {
@@ -63,6 +67,68 @@ const login = async (req, res) => {
   }
 };
 
+const refreshToken = (req, res) => {
+  try {
+    const { token } = req.body;
+    jwt.verify(token, env.SECRET_KEY, (error, decoded) => {
+      if (error) {
+        throw new Error(error.name);
+      }
+
+      const userPayload = { id: decoded.id, role: decoded.role };
+
+      const options = {
+        expiresIn: "15m",
+      };
+
+      const accessToken = jwt.sign(userPayload, env.SECRET_KEY, options);
+
+      const refreshToken = jwt.sign(userPayload, env.SECRET_KEY, { expiresIn: "30m" });
+
+      return res.status(201).json({
+        accessToken,
+        refreshToken,
+      });
+    });
+  } catch (error) {
+    res.json({
+      message: error.message,
+    });
+  }
+};
+
+const profileUser = async (req, res) => {
+  const idTarget = req.decoded.userId;
+
+  await User.findByPk(idTarget)
+    .then((result) => {
+      const { userId, fullName, email, role, status, avatar, createdAt, updatedAt, deletedAt } = result.dataValues;
+
+      res.status(200).json({
+        code: 200,
+        message: `Data sudah diterima`,
+        data: {
+          id: userId,
+          fullName,
+          email,
+          role,
+          status,
+          avatar,
+          createdAt,
+          updatedAt,
+          deletedAt,
+        },
+      });
+    })
+    .catch((error) => {
+      res.status(400).json({
+        message: error.message,
+      });
+    });
+};
+
 module.exports = {
   login,
+  refreshToken,
+  profileUser,
 };

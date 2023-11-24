@@ -23,7 +23,14 @@ const hashPassword = async (password) => {
 };
 
 const createAUser = async (req, res) => {
+  const checkRole = req.decoded.role;
   const { fullName, email, confirmNewPassword, newPassword, role, status } = req.body;
+
+  if (checkRole !== "Super Admin") {
+    res.status(200).json({
+      message: `Invalid role`,
+    });
+  }
 
   if (newPassword !== confirmNewPassword) {
     res.status(400).json({
@@ -60,6 +67,14 @@ const createAUser = async (req, res) => {
 };
 
 const getAllUser = async (req, res) => {
+  const checkRole = req.decoded.role;
+
+  if (checkRole !== "Super Admin") {
+    res.status(200).json({
+      message: `Invalid role`,
+    });
+  }
+
   const page = parseInt(req.query.page) || 1;
   const pageSize = parseInt(req.query.pageSize) || 10;
 
@@ -193,6 +208,14 @@ const updateUser = async (req, res) => {
 
 const deleteUser = async (req, res) => {
   const idTarget = req.params.id;
+
+  const checkRole = req.decoded.role;
+
+  if (checkRole !== "Super Admin") {
+    res.status(200).json({
+      message: `Invalid role`,
+    });
+  }
 
   await User.destroy({
     where: {
