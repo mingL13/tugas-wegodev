@@ -17,6 +17,10 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      categoryId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+      },
       thumbnail: {
         type: Sequelize.STRING,
         allowNull: true,
@@ -35,6 +39,10 @@ module.exports = {
         type: Sequelize.DATE,
       },
       updatedAt: {
+        allowNull: false,
+        type: Sequelize.DATE,
+      },
+      deletedAt: {
         allowNull: false,
         type: Sequelize.DATE,
       },

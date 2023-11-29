@@ -11,8 +11,11 @@ const Authentication = (req, res, next) => {
       message: "Token not found",
     });
   }
-  jwt.verify(token, env.SECRET_KEY, (error, decoded) => {
+  console.log(token);
+
+  jwt.verify(token.split(" ")[1], env.SECRET_KEY, (error, decoded) => {
     if (error) {
+      console.log("error disini");
       throw new Error(error.name);
     }
 

@@ -59,13 +59,6 @@ module.exports = (sequelize, DataTypes) => {
       categoryId: {
         type: Sequelize.STRING,
         allowNull: false,
-        get() {
-          const rawValue = this.getDataValue("categoryId");
-          return rawValue ? rawValue.split(",") : [];
-        },
-        set(value) {
-          this.setDataValue("categoryId", Array.isArray(value) ? value.join(",") : value);
-        },
       },
       deletedAt: {
         allowNull: true,

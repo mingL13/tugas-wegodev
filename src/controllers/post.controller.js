@@ -13,18 +13,21 @@ const createAPost = async (req, res) => {
   })
     .then(async (result) => {
       const { postId } = result.dataValues;
-      await PostCategory.create({
-        postId,
-        categoryId,
-      })
-        .then((result) => {
-          return;
+
+      for (let i = 0; i < categoryId.length; i++) {
+        await PostCategory.create({
+          postId,
+          categoryId: categoryId[i],
         })
-        .catch((error) => {
-          res.status(400).json({
-            message: error.message,
+          .then((result) => {
+            return;
+          })
+          .catch((error) => {
+            res.status(400).json({
+              message: error.message,
+            });
           });
-        });
+      }
 
       res.status(201).json({
         code: 201,

@@ -27,7 +27,7 @@ const createAUser = async (req, res) => {
   const { fullName, email, confirmNewPassword, newPassword, role, status } = req.body;
 
   if (checkRole !== "Super Admin") {
-    res.status(200).json({
+    res.status(400).json({
       message: `Invalid role`,
     });
   }
@@ -70,7 +70,7 @@ const getAllUser = async (req, res) => {
   const checkRole = req.decoded.role;
 
   if (checkRole !== "Super Admin") {
-    res.status(200).json({
+    res.status(401).json({
       message: `Invalid role`,
     });
   }

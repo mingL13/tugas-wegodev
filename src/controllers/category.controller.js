@@ -48,7 +48,7 @@ const getAllCategories = async (req, res) => {
       res.status(200).json({
         code: 200,
         message: `${result.length} data sudah diterima`,
-        count: displayCategory.length,
+        count: displayCategories.length,
         data: displayCategories,
       });
     })

@@ -31,13 +31,12 @@ module.exports = {
         defaultValue: "Creator",
       },
       status: {
-        type: Sequelize.ENUM("Active", "Inactive"),
+        type: Sequelize.ENUM("Active", "Suspend"),
         allowNull: false,
         defaultValue: "Active",
       },
       avatar: {
         type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
         allowNull: true,
       },
       createdAt: {
