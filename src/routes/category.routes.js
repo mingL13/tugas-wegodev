@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const categoryController = require("../controllers/category.controller");
-const { Authentication } = require("../middlewares/authentication");
+const { Authentication } = require("../middlewares/Authentication");
 
 router.post("/category", Authentication, categoryController.createACategory);
 router.get("/category", categoryController.getAllCategories);
